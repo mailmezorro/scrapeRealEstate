@@ -7,14 +7,12 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 import logging
 import os
-from psycopg2 import sql
 from selenium.common.exceptions import TimeoutException
 from datetime import datetime
 # own packages
 from scripts import config_utils
 from scripts import scrape_houses_kleinanzeigen
 import psycopg2
-import json
 from scripts.utils import convert_to_int, convert_to_float, convert_to_date
 
 
