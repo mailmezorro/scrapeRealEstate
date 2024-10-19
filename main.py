@@ -14,6 +14,8 @@ from scripts import config_utils
 from scripts import scrape_houses_kleinanzeigen
 import psycopg2
 from scripts.utils import convert_to_int, convert_to_float, convert_to_date
+import scripts.database_operations as database_operations
+import scripts.utils as utils
 
 
 def main():
@@ -85,16 +87,29 @@ def main():
             result.update(scrape_houses_kleinanzeigen.scrape_attributes(logger, driver, ["Wohnfläche", "Schlafzimmer", "Grundstücksfläche", "Baujahr", "Zimmer", "Badezimmer", "Etagen", "Provision", "Haustyp"]))
             result = convert_to_int(result, ['Schlafzimmer', 'Zimmer', 'Badezimmer', 'Etagen', 'Baujahr'])
             result = convert_to_float(result,['Wohnfläche','Grundstücksfläche'])
+            # ToDo: bad pattern here... need do to fix
+            utils.rename_key(result, 'Wohnfläche', 'living_area')
+            utils.rename_key(result, 'Schlafzimmer', 'bedrooms')
+            utils.rename_key(result, 'Grundstücksfläche', 'plot_area')
+            utils.rename_key(result, 'Zimmer', 'rooms')
+            utils.rename_key(result, 'Badezimmer', 'bathrooms')
+            utils.rename_key(result, 'Etagen', 'floors')
+            utils.rename_key(result, 'Provision', 'commission')
+            utils.rename_key(result, 'Haustyp', 'house_type')
+            utils.rename_key(result, 'Baujahr', 'year_built')
+            
+            
             result.update(scrape_houses_kleinanzeigen.scrape_description(logger, driver))
             result.update(scrape_houses_kleinanzeigen.scrape_right_sidebar(logger, driver))
             result["scrape_date"] = datetime.now()
-            
-            
+            result["active_flag"] = True
+
             results.append(result)
+        if page == 3:
+            break
 
     # Close Chrome
     driver.quit()
-    
     
     # Init Database
     config_db = config_utils.load_config_file(config_file="./config/db_config.json")
@@ -109,48 +124,21 @@ def main():
         print("Connection successful!")
         cur = conn.cursor()
         
-        insert_query = """
-            INSERT INTO kleinanzeigen_immobilien (
-                link, title, price, location, bedrooms, creation_date, view_counter, 
-                living_area, plot_area, year_built, rooms, bathrooms, floors, 
-                commission, house_type, description, company, author, number_of_ads, id_ad, scrape_date
-            )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """
+    except Exception as e:
+        print(f"Error connecting to the database: {e}")
+        return
+    
+    try:
+        columns = database_operations.get_column_names(cur, 'kleinanzeigen_immobilien')    
         for result in results:
-            cur.execute(insert_query, (
-                result['link'],                # link
-                result['title'],               # title
-                result['price'],               # price
-                result['location'],            # location
-                result.get('Schlafzimmer'),    # bedrooms
-                result['creation_date'],       # creation_date
-                result.get('view_counter'),    # view_counter
-                result.get('Wohnfläche'),      # living_area
-                result.get('Grundstücksfläche'),# plot_area
-                result.get('Baujahr'),         # year_built
-                result.get('Zimmer'),          # rooms
-                result.get('Badezimmer'),      # bathrooms
-                result.get('Etagen'),          # floors
-                result.get('Provision'),       # commission
-                result.get('Haustyp'),         # house_type
-                result.get('description'),     # description
-                result.get('Company'),         # company
-                result.get('Author'),          # author
-                result.get('number_of_ads'),   # number_of_ads
-                result.get('id_ad'),            # id_ad
-                result['scrape_date']           # scrape_date
-            ))
-
-
-        conn.commit()
-        print("Data successfully inserted into the table!")
+            database_operations.check_and_insert_or_update(result, cur, config_db.get('main_table_name'), config_db.get('delta_table_name'), config_db.get('deltaPrice_table_name'), config_db.get('deltaView_counter_name'))
+            # Commit changes to the database
+            conn.commit()
         
     except Exception as e:
         print(f"Error inserting data: {e}")
         conn.rollback()
     finally:
-
         cur.close()
         conn.close()        
 
