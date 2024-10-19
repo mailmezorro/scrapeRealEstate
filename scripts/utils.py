@@ -22,5 +22,11 @@ def convert_to_date(values):
             return datetime.strptime(value, "%d.%m.%Y")
         except ValueError:
             return None
+        
+        
+def rename_key(dictionary, old_key, new_key):
+    if old_key in dictionary:
+        dictionary[new_key] = dictionary.pop(old_key)
+    return dictionary
 
     
