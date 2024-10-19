@@ -156,11 +156,11 @@ def scrape_right_sidebar(logger,driver):
         wait = WebDriverWait(driver, 10)
         wait.until(EC.presence_of_element_located((By.XPATH, "//*[@id='viewad-contact']")))
         element = driver.find_element(By.CSS_SELECTOR, ".userprofile-vip").text
-        logger.info(f"Company found at {driver.current_url}")
-        result["Company"] = element
+        logger.info(f"company found at {driver.current_url}")
+        result["company"] = element
     except NoSuchElementException:
         logger.warning(f"Company not found at {driver.current_url}")
-        result["Company"] = None
+        result["company"] = None
     except Exception as e:
         logger.error(f"Error retrieving von {driver.current_url}: {e.__class__.__name__}", exc_info=True)
         
@@ -168,11 +168,11 @@ def scrape_right_sidebar(logger,driver):
     # author    
     try:
         element = driver.find_element(By.XPATH, f"//*[@id='viewad-contact']").text
-        logger.info(f"Author found at {driver.current_url}")
-        result["Author"] = element
+        logger.info(f"author found at {driver.current_url}")
+        result["author"] = element
     except NoSuchElementException:
         logger.warning(f"Author not found at {driver.current_url}")
-        result["Author"] = None
+        result["author"] = None
     except Exception as e:
         logger.error(f"Error retrieving von {driver.current_url}: {e.__class__.__name__}", exc_info=True)    
 
