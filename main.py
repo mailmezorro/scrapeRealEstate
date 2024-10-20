@@ -19,8 +19,13 @@ import scripts.utils as utils
 
 
 def main():
+    if os.environ == 'windows':
+        windows_flag = True
     # Clear terminal
-    os.system('cls') 
+    if windows_flag:
+        os.system('cls')
+    else:
+        os.system('clear') 
     
     #datetime for logging name
     now = datetime.now()
@@ -57,7 +62,7 @@ def main():
     base_url = "https://www.kleinanzeigen.de/s-haus-kaufen/hoesbach/seite:{}/c208l16132r5"
     results = []
 
-    for page in range(1, 99):
+    for page in range(1, 999):
         url = base_url.format(page)  
         
         # Open website
