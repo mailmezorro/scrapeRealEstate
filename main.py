@@ -46,7 +46,6 @@ def main():
     # Load private config for path to driver and ublock extension
     config = config_utils.load_config_file(config_file="./config/config.json")
     driver_path = config.get("driver_path")
-    ublock_extension = config.get("ublock_extension")
     service = Service(driver_path)
 
     # Chrome options
@@ -54,7 +53,10 @@ def main():
     chrome_options.add_argument("--headless") 
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_extension(ublock_extension)
+    if windows_flag:
+        ublock_extension = config.get("ublock_extension")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_extension(ublock_extension)
 
     # Start Chrome
     driver = webdriver.Chrome(service=service, options=chrome_options)
