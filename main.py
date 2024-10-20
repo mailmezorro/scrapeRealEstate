@@ -21,7 +21,9 @@ import scripts.utils as utils
 def main():
     if os.environ == 'windows':
         windows_flag = True
-    # Clear terminal
+    else
+        windows_flag = False
+        # Clear terminal
     if windows_flag:
         os.system('cls')
     else:
