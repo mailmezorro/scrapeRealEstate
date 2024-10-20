@@ -8,6 +8,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 import logging
 import os
 from selenium.common.exceptions import TimeoutException
+import random
+import time
 from datetime import datetime
 # own packages
 from scripts import config_utils
@@ -68,6 +70,8 @@ def main():
     results = []
 
     for page in range(1, 999):
+        random_sleep = random.uniform(3.0, 5.0)
+        time.sleep(random_sleep)
         url = base_url.format(page)  
         
         # Open website
@@ -115,9 +119,10 @@ def main():
             result["active_flag"] = True
 
             results.append(result)
-        if page == 3:
-            break
-
+            
+            random_sleep = random.uniform(1.0, 2.0)
+            time.sleep(random_sleep)
+        
     # Close Chrome
     driver.quit()
     
