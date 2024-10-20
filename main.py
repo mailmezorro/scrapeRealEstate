@@ -64,7 +64,7 @@ def main():
     # Start Chrome
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
-    base_url = "https://www.kleinanzeigen.de/s-haus-kaufen/hoesbach/seite:{}/c208l16132r5"
+    base_url = config.get("url")
     results = []
 
     for page in range(1, 999):
