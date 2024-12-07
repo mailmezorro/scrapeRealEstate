@@ -1,7 +1,5 @@
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
-#from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -59,17 +57,17 @@ def main():
     service = Service(driver_path)
 
     # Chrome options
-    chrome_options = Options()
-    chrome_options.add_argument("--headless") 
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
+    firefox_options = Options()
+    firefox_options.add_argument("--headless") 
+    firefox_options.add_argument("--no-sandbox")
+    firefox_options.add_argument("--disable-dev-shm-usage")
     if windows_flag:
         ublock_extension = config.get("ublock_extension")
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_extension(ublock_extension)
+        firefox_options.add_argument("--disable-gpu")
+        firefox_options.add_extension(ublock_extension)
 
     # Start Chrome
-    driver = webdriver.Chrome(service=service, options=chrome_options)
+    driver = webdriver.Firefox(service=service, options=firefox_options)
 
     base_url = "https://www.kleinanzeigen.de/s-haus-kaufen/aschaffenburg/seite:{}/c208l7421r10"
     results = []
@@ -100,6 +98,13 @@ def main():
 
         for link in links:
             driver.get(link)
+
+            if scrape_houses_kleinanzeigen.check_url_availability(link):
+                print(f"Link there, srapy: {link}")
+                driver.get(link)
+            else:
+                print(f"Link not there, scrapy: {link}")
+                continue
 
             result = {'link': link}
             result.update(scrape_houses_kleinanzeigen.scrape_header(logger, driver))
