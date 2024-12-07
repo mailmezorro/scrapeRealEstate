@@ -21,7 +21,7 @@ import scripts.utils as utils
 
 
 def main():
-    if os.environ == 'windows':
+    if os.name == 'nt':
         windows_flag = True
     else:
         windows_flag = False
