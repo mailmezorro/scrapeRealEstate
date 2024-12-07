@@ -15,6 +15,10 @@ from selenium.common.exceptions import TimeoutException
 import re
 from datetime import datetime
 
+import requests
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+
 
 def scrape_attributes(logger, driver, attributes): 
     results = {}
@@ -60,7 +64,7 @@ def scrape_header(logger,driver):
     """Scrape the title, price, location, creation date and view counter of an ad."""
     results = {}
 
-    wait = WebDriverWait(driver, 10)
+    wait = WebDriverWait(driver, 20)
     wait.until(EC.presence_of_element_located((By.XPATH, "//*[@id='viewad-cntr-num']")))
     
     # title
@@ -212,3 +216,11 @@ def scrape_right_sidebar(logger,driver):
         logger.error(f"Error retrieving {driver.current_url}: {e.__class__.__name__}", exc_info=True)
 
     return result
+
+def check_url_availability(url):
+    try:
+        response = requests.head(url, timeout=5)  
+        return response.status_code == 200  
+    except requests.RequestException as e:
+        print(f"Error checking URL: {e}")
+        return False
