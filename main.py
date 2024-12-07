@@ -25,7 +25,6 @@ def main():
         windows_flag = True
     else:
         windows_flag = False
-        
     # Clear terminal
     if windows_flag:
         os.system('cls')
@@ -49,7 +48,11 @@ def main():
     logger = logging.getLogger(__name__)
 
     # Load private config for path to driver and ublock extension
-    config = config_utils.load_config_file(config_file="./config/config.json")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Kombiniere das Verzeichnis der 'main.py' mit dem relativen Pfad zur config.json
+    config_path = os.path.join(current_dir, 'config', 'config.json')
+    config = config_utils.load_config_file(config_path)
     driver_path = config.get("driver_path")
     service = Service(driver_path)
 
@@ -66,7 +69,7 @@ def main():
     # Start Chrome
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
-    base_url = config.get("url")
+    base_url = "https://www.kleinanzeigen.de/s-haus-kaufen/aschaffenburg/seite:{}/c208l7421r10"
     results = []
 
     for page in range(1, 999):
@@ -122,12 +125,15 @@ def main():
             
             random_sleep = random.uniform(1.0, 2.0)
             time.sleep(random_sleep)
+
         
     # Close Chrome
     driver.quit()
     
     # Init Database
-    config_db = config_utils.load_config_file(config_file="./config/db_config.json")
+    config_path = os.path.join(current_dir, 'config', 'db_config.json')
+    config_db = config_utils.load_config_file(config_path)
+
     try:
         conn = psycopg2.connect(
             dbname=config_db.get('dbname'),
