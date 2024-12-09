@@ -18,7 +18,7 @@ import psycopg2
 from scripts.utils import convert_to_int, convert_to_float, convert_to_date
 import scripts.database_operations as database_operations
 import scripts.utils as utils
-
+from webdriver_manager.firefox import GeckoDriverManager
 
 def main():
     if os.name == 'nt':
@@ -61,12 +61,13 @@ def main():
     firefox_options.add_argument("--headless") 
     firefox_options.add_argument("--no-sandbox")
     firefox_options.add_argument("--disable-dev-shm-usage")
-    if windows_flag:
-        ublock_extension = config.get("ublock_extension")
-        firefox_options.add_argument("--disable-gpu")
-        firefox_options.add_extension(ublock_extension)
+    #if windows_flag:
+        #ublock_extension = config.get("ublock_extension")
+        #firefox_options.add_argument("--disable-gpu")
+        #firefox_options.add_extension(ublock_extension)
 
     # Start Chrome
+    service = Service(GeckoDriverManager().install())
     driver = webdriver.Firefox(service=service, options=firefox_options)
 
     base_url = "https://www.kleinanzeigen.de/s-haus-kaufen/aschaffenburg/seite:{}/c208l7421r10"
