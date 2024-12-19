@@ -53,6 +53,8 @@ def main():
     config_path = os.path.join(current_dir, 'config', 'config.json')
     config = config_utils.load_config_file(config_path)
     UBLOCK_XPI_URL = "https://addons.mozilla.org/firefox/downloads/file/4058632/ublock_origin-1.50.0-an+fx.xpi"
+    driver_path = config.get("driver_path")
+    service = Service(driver_path)
 
     ublock_path = os.path.join(os.getcwd(), "ublock_origin.xpi")
     if not os.path.exists(ublock_path):
@@ -73,7 +75,7 @@ def main():
     firefox_options.add_argument("--disable-gpu")
 
     # Start Firefox
-    service = Service(GeckoDriverManager().install())
+    #service = Service(GeckoDriverManager().install())
     driver = webdriver.Firefox(service=service, options=firefox_options)
     
     base_url = "https://www.kleinanzeigen.de/s-haus-kaufen/aschaffenburg/seite:{}/c208l7421r10"
