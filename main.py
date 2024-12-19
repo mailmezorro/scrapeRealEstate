@@ -19,6 +19,7 @@ from scripts.utils import convert_to_int, convert_to_float, convert_to_date
 import scripts.database_operations as database_operations
 import scripts.utils as utils
 from webdriver_manager.firefox import GeckoDriverManager
+import requests
 
 def main():
     if os.name == 'nt':
@@ -49,29 +50,32 @@ def main():
 
     # Load private config for path to driver and ublock extension
     current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Kombiniere das Verzeichnis der 'main.py' mit dem relativen Pfad zur config.json
     config_path = os.path.join(current_dir, 'config', 'config.json')
     config = config_utils.load_config_file(config_path)
-    driver_path = config.get("driver_path")
-    service = Service(driver_path)
+    UBLOCK_XPI_URL = "https://addons.mozilla.org/firefox/downloads/file/4058632/ublock_origin-1.50.0-an+fx.xpi"
 
-    # Chrome options
+    ublock_path = os.path.join(os.getcwd(), "ublock_origin.xpi")
+    if not os.path.exists(ublock_path):
+        import requests
+        response = requests.get(UBLOCK_XPI_URL)
+        with open(ublock_path, "wb") as f:
+            f.write(response.content)
+
+    # Firefox options
     firefox_options = Options()
     firefox_options.add_argument("--headless") 
     firefox_options.add_argument("--no-sandbox")
     firefox_options.add_argument("--disable-dev-shm-usage")
+    firefox_options.set_preference("extensions.autoDisableScopes", 0)
+    firefox_options.set_preference("extensions.enabledScopes", 15)
+    firefox_options.add_argument(f"--load-extension={ublock_path}")
     firefox_options.set_preference("general.useragent.override", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+    firefox_options.add_argument("--disable-gpu")
 
-    if windows_flag:
-        ublock_extension = config.get("ublock_extension")
-        firefox_options.add_argument("--disable-gpu")
-        firefox_options.add_extension(ublock_extension)
-
-    # Start Chrome
+    # Start Firefox
     service = Service(GeckoDriverManager().install())
     driver = webdriver.Firefox(service=service, options=firefox_options)
-
+    
     base_url = "https://www.kleinanzeigen.de/s-haus-kaufen/aschaffenburg/seite:{}/c208l7421r10"
     results = []
 
