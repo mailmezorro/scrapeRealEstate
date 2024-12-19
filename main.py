@@ -53,8 +53,12 @@ def main():
     config_path = os.path.join(current_dir, 'config', 'config.json')
     config = config_utils.load_config_file(config_path)
     UBLOCK_XPI_URL = "https://addons.mozilla.org/firefox/downloads/file/4058632/ublock_origin-1.50.0-an+fx.xpi"
-    driver_path = config.get("driver_path")
-    service = Service(driver_path)
+    
+    if os.name == 'nt':
+        service = Service(GeckoDriverManager().install())
+    else:
+        driver_path = config.get("driver_path")
+        service = Service(driver_path)
 
     ublock_path = os.path.join(os.getcwd(), "ublock_origin.xpi")
     if not os.path.exists(ublock_path):
@@ -75,11 +79,15 @@ def main():
     firefox_options.add_argument("--disable-gpu")
 
     # Start Firefox
-    #service = Service(GeckoDriverManager().install())
     driver = webdriver.Firefox(service=service, options=firefox_options)
     
     base_url = "https://www.kleinanzeigen.de/s-haus-kaufen/aschaffenburg/seite:{}/c208l7421r10"
     results = []
+    
+    # db Config
+    # Init Database
+    config_path = os.path.join(current_dir, 'config', 'db_config.json')
+    config_db = config_utils.load_config_file(config_path)
 
     for page in range(1, 100):
         random_sleep = random.uniform(3.0, 5.0)
@@ -138,45 +146,42 @@ def main():
 
             results.append(result)
             
-            random_sleep = random.uniform(1.0, 2.0)
+            random_sleep = random.uniform(0.5, 1.0)
             time.sleep(random_sleep)
 
-        
-    # Close Chrome
-    driver.quit()
-    
-    # Init Database
-    config_path = os.path.join(current_dir, 'config', 'db_config.json')
-    config_db = config_utils.load_config_file(config_path)
+        try:
+            conn = psycopg2.connect(
+                dbname=config_db.get('dbname'),
+                user=config_db.get('user'),
+                password=config_db.get('password'),  
+                host=config_db.get('host'),
+                port=config_db.get('port')
+            )
+            print("Connection successful!")
+            cur = conn.cursor()                
+                            
+            try:
+                print(f"DB Data Transfer....")
+                columns = database_operations.get_column_names(cur, 'kleinanzeigen_immobilien')    
+                for result in results:
+                    database_operations.check_and_insert_or_update(result, cur, config_db.get('main_table_name'), config_db.get('delta_table_name'), config_db.get('deltaPrice_table_name'), config_db.get('deltaView_counter_name'))
+                    # Commit changes to the database
+                    conn.commit()
+                
+            except Exception as e:
+                print(f"Error inserting data: {e}")
+                conn.rollback()
+            finally:
+                cur.close()
+                conn.close()
+            results.clear()
 
-    try:
-        conn = psycopg2.connect(
-            dbname=config_db.get('dbname'),
-            user=config_db.get('user'),
-            password=config_db.get('password'),  
-            host=config_db.get('host'),
-            port=config_db.get('port')
-        )
-        print("Connection successful!")
-        cur = conn.cursor()
-        
-    except Exception as e:
-        print(f"Error connecting to the database: {e}")
-        return
-    
-    try:
-        columns = database_operations.get_column_names(cur, 'kleinanzeigen_immobilien')    
-        for result in results:
-            database_operations.check_and_insert_or_update(result, cur, config_db.get('main_table_name'), config_db.get('delta_table_name'), config_db.get('deltaPrice_table_name'), config_db.get('deltaView_counter_name'))
-            # Commit changes to the database
-            conn.commit()
-        
-    except Exception as e:
-        print(f"Error inserting data: {e}")
-        conn.rollback()
-    finally:
-        cur.close()
-        conn.close()        
+        except Exception as e:
+            print(f"Error connecting to the database: {e}")
+            return 
+
+    # Close Firefox
+    driver.quit()
 
 if __name__ == "__main__":
     main() 
