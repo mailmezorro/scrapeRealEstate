@@ -61,10 +61,12 @@ def main():
     firefox_options.add_argument("--headless") 
     firefox_options.add_argument("--no-sandbox")
     firefox_options.add_argument("--disable-dev-shm-usage")
-    #if windows_flag:
-        #ublock_extension = config.get("ublock_extension")
-        #firefox_options.add_argument("--disable-gpu")
-        #firefox_options.add_extension(ublock_extension)
+    firefox_options.set_preference("general.useragent.override", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+
+    if windows_flag:
+        ublock_extension = config.get("ublock_extension")
+        firefox_options.add_argument("--disable-gpu")
+        firefox_options.add_extension(ublock_extension)
 
     # Start Chrome
     service = Service(GeckoDriverManager().install())
@@ -73,7 +75,7 @@ def main():
     base_url = "https://www.kleinanzeigen.de/s-haus-kaufen/aschaffenburg/seite:{}/c208l7421r10"
     results = []
 
-    for page in range(1, 999):
+    for page in range(1, 100):
         random_sleep = random.uniform(3.0, 5.0)
         time.sleep(random_sleep)
         url = base_url.format(page)  
@@ -102,7 +104,6 @@ def main():
 
             if scrape_houses_kleinanzeigen.check_url_availability(link):
                 print(f"Link there, srapy: {link}")
-                driver.get(link)
             else:
                 print(f"Link not there, scrapy: {link}")
                 continue
