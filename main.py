@@ -148,6 +148,8 @@ def main():
             
             random_sleep = random.uniform(0.5, 1.0)
             time.sleep(random_sleep)
+        driver.quit()
+        driver = webdriver.Firefox(service=service, options=firefox_options)
 
         try:
             conn = psycopg2.connect(
