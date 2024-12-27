@@ -1,4 +1,4 @@
-config/config.json
-config/db_config.json
+*.json
 *.log
+*.sh
 __pycache__
