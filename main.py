@@ -11,15 +11,17 @@ from selenium.common.exceptions import TimeoutException
 import random
 import time
 from datetime import datetime
+from webdriver_manager.firefox import GeckoDriverManager
+import psycopg2
+
 # own packages
 from scripts import config_utils
 from scripts import scrape_houses_kleinanzeigen
-import psycopg2
 from scripts.utils import convert_to_int, convert_to_float, convert_to_date
 import scripts.database_operations as database_operations
 import scripts.utils as utils
-from webdriver_manager.firefox import GeckoDriverManager
-import requests
+
+from scripts import convertgps
 
 def main():
     if os.name == 'nt':
@@ -138,16 +140,16 @@ def main():
             utils.rename_key(result, 'Haustyp', 'house_type')
             utils.rename_key(result, 'Baujahr', 'year_built')
             
-            
             result.update(scrape_houses_kleinanzeigen.scrape_description(logger, driver))
             result.update(scrape_houses_kleinanzeigen.scrape_right_sidebar(logger, driver))
             result["scrape_date"] = datetime.now()
             result["active_flag"] = True
-
+            # New result
             results.append(result)
             
             random_sleep = random.uniform(0.5, 1.0)
             time.sleep(random_sleep)
+
         driver.quit()
         driver = webdriver.Firefox(service=service, options=firefox_options)
 
@@ -177,13 +179,17 @@ def main():
                 cur.close()
                 conn.close()
             results.clear()
-
+            
         except Exception as e:
             print(f"Error connecting to the database: {e}")
             return 
 
     # Close Firefox
     driver.quit()
+    
+    # Update GPS
+    convertgps.gps_update(config_db)
+    logger.info(f"GPS data updated.")
 
 if __name__ == "__main__":
     main() 
