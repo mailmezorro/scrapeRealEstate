@@ -13,6 +13,7 @@ import time
 from datetime import datetime
 from webdriver_manager.firefox import GeckoDriverManager
 import psycopg2
+import scrapy
 
 # own packages
 from scripts import config_utils
