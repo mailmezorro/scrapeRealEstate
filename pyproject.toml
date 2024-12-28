@@ -10,6 +10,7 @@ package-mode = false
 python = "^3.11"
 selenium = "^4.25.0"
 psycopg2 = "^2.9.9"
+pandas = "^2.2.3"
 
 
 [build-system]
