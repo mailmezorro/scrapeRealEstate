@@ -1,12 +1,28 @@
-# Define here the models for your scraped items
-#
-# See documentation in:
-# https://docs.scrapy.org/en/latest/topics/items.html
-
 import scrapy
 
-
-class KleinanzeigenScraperItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class KleinanzeigenItem(scrapy.Item):
+    title = scrapy.Field()
+    price = scrapy.Field()
+    location = scrapy.Field()
+    description = scrapy.Field()
+    creation_date = scrapy.Field()
+    scrape_date = scrapy.Field()
+    bedrooms = scrapy.Field()
+    living_area = scrapy.Field()
+    plot_area = scrapy.Field()
+    rooms = scrapy.Field()
+    bathrooms = scrapy.Field()
+    floors = scrapy.Field()
+    commission = scrapy.Field()
+    house_type = scrapy.Field()
+    year_built = scrapy.Field()
+    view_counter = scrapy.Field()
+    active_flag = scrapy.Field()
+    seller_name = scrapy.Field()
+    number_of_ads = scrapy.Field()
+    id_ad = scrapy.Field()
+    link = scrapy.Field()
+    user_type = scrapy.Field()
+    active_since = scrapy.Field()
+    longitude = scrapy.Field()
+    latitude = scrapy.Field()
