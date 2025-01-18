@@ -2,3 +2,4 @@
 *.log
 *.sh
 __pycache__
+*log*.txt
