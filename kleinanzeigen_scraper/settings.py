@@ -10,7 +10,7 @@ import datetime
 import sys
 import os
 import json
-CONFIG_PATH = "/home/dan/github/scrapeRealEstatePrivate/config/config_db.json"
+CONFIG_PATH = "/app/scrapeRealEstatePrivate/config/config_vps_db.json"
 
 try:
     with open(CONFIG_PATH, "r") as file:
