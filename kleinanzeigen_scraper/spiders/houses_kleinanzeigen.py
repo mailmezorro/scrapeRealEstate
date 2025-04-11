@@ -10,25 +10,35 @@ class HousesKleinanzeigenSpider(scrapy.Spider):
     start_urls = ["https://www.kleinanzeigen.de/s-haus-kaufen/aschaffenburg/seite1/c208l7421r10"]
 
 
-
     def start_requests(self):
-        # Definiere den Bereich der Seiten (1 bis 10)
-        base_url = "https://www.kleinanzeigen.de/s-haus-kaufen/aschaffenburg/seite:{}/c208l7421r10"
-        for page in range(1, 11):  # Von Seite 1 bis einschließlich Seite 10
-            page_url = base_url.format(page)
-            self.logger.info(f"Queuing page: {page_url}")
-            yield scrapy.Request(url=page_url, callback=self.parse)
+        url = "https://www.kleinanzeigen.de/s-haus-kaufen/aschaffenburg/seite:1/c208l7421r10"
+        yield scrapy.Request(url=url, callback=self.parse)
+
 
     def parse(self, response):
-        # Verarbeite Listings auf der aktuellen Seite
         self.logger.info(f"Processing page: {response.url}")
+
+        # 1) Check if there are still listings on this page
+        listings = response.css('.aditem')
+        if not listings:
+            self.logger.info(f"No more listings on {response.url}. Stopping now.")
+            return
+
+        # 2) Use your existing logic
         yield from self.parse_listings(response)
 
+        # 3) Calculate the next page
+        current_page = int(response.url.split("seite:")[1].split("/")[0])
+        next_page = current_page + 1
 
+        next_url = f"https://www.kleinanzeigen.de/s-haus-kaufen/aschaffenburg/seite:{next_page}/c208l7421r10"
+        self.logger.info(f"Switching to page {next_page}: {next_url}")
 
+        yield scrapy.Request(url=next_url, callback=self.parse)
+        
 
     def parse_listings(self, response):
-        # Extrahiere die Links zu den einzelnen Anzeigen
+        # Extract the links to the individual ads
         ads = response.css(".aditem .text-module-begin a::attr(href)").getall()
         for ad in ads:
             absolute_url = response.urljoin(ad)
@@ -36,7 +46,6 @@ class HousesKleinanzeigenSpider(scrapy.Spider):
 
     def parse_ad(self, response):
         item = KleinanzeigenItem()
-
 
         # header info
         item['link'] = response.url
@@ -90,23 +99,23 @@ class HousesKleinanzeigenSpider(scrapy.Spider):
         item['seller_name'] = seller_name
         if len(seller_names) > 1 and "Nutzer" in seller_names[1]:
             item['user_type'] = seller_names[1]
-        if len(seller_names) > 2 and"Aktiv seit" in seller_names[2]:  # Prüfe, ob der Text das Datum enthalten könnte
-                match = re.search(r'\d{2}\.\d{2}\.\d{4}', seller_names[2])  # Suche das Datumsmuster
+        if len(seller_names) > 2 and"Aktiv seit" in seller_names[2]:  # Check if the text might contain the date
+                match = re.search(r'\d{2}\.\d{2}\.\d{4}', seller_names[2])  # Search for pattern
                 if match:
-                    item['active_since'] = self.parse_date(match.group(0))  # Speichere das gefundene Datum
+                    item['active_since'] = self.parse_date(match.group(0))  # store the date 
 
         item['number_of_ads'] = None
-        # Anzeigen aus `poster-other-ads-link`
+        # display `poster-other-ads-link`
         number_of_ads_poster = response.xpath("//a[@id='poster-other-ads-link']/text()").get()
         if number_of_ads_poster:
             number_of_ads_poster = self.extract_numeric(number_of_ads_poster.strip())
 
-        # Anzeigen aus `bizteaser--numads`
+        # display `bizteaser--numads`
         number_of_ads_bizteaser = response.xpath("//span[contains(@class, 'bizteaser--numads')]/text()").get()
         if number_of_ads_bizteaser:
             number_of_ads_bizteaser = self.extract_numeric(number_of_ads_bizteaser.strip())
 
-        # Kombiniere die beiden Ergebnisse
+        # Merge the results
         if number_of_ads_poster or number_of_ads_bizteaser:
             item['number_of_ads'] = max(number_of_ads_poster or 0, number_of_ads_bizteaser or 0)
 
@@ -133,20 +142,19 @@ class HousesKleinanzeigenSpider(scrapy.Spider):
                 meta={'item': item}
             )
         else:
-            # Falls `id_ad` nicht existiert, direkt weitergeben
+            # If `id_ad` does not exist, pass the item directly
             yield item
 
 
     def parse_api(self, response):
-        item = response.meta['item']  # Bestehendes Item abrufen
+        item = response.meta['item'] 
         try:
             data = json.loads(response.text)
-            item['view_counter'] = data.get('numVisits', None)  # Daten hinzufügen
+            item['view_counter'] = data.get('numVisits', None)  
         except json.JSONDecodeError:
             self.logger.warning(f"Invalid JSON response from API: {response.url}")
             item['view_counter'] = None
-        yield item  # Aktualisiertes Item zurückgeben
-
+        yield item  
 
 
     def extract_price(self, price_text):
@@ -159,7 +167,7 @@ class HousesKleinanzeigenSpider(scrapy.Spider):
     def parse_date(self, date_text):
         try:
             parsed_date = datetime.strptime(date_text, "%d.%m.%Y")
-            return parsed_date.strftime("%Y-%m-%d")  # Format für die Datenbank
+            return parsed_date.strftime("%Y-%m-%d")  
         except (ValueError, TypeError):
             return None
 
