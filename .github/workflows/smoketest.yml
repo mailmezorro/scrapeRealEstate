@@ -27,10 +27,10 @@ jobs:
       - name: Install dependencies
         run: |
           poetry install
-
+          
       - name: Run Spider in TESTMODE
         working-directory: kleinanzeigen_scraper
-        run: |
-          export TESTMODE=True
-          poetry run scrapy crawl houses_kleinanzeigen -s CLOSESPIDER_PAGECOUNT=1
+        run: poetry run scrapy crawl houses_kleinanzeigen -s CLOSESPIDER_PAGECOUNT=1
+        env:
+          TESTMODE: "True"
 
