@@ -29,7 +29,7 @@ jobs:
           poetry install
 
       - name: Run Spider in TESTMODE
-        run: |
-          TESTMODE=True poetry run scrapy crawl houses_kleinanzeigen -s CLOSESPIDER_PAGECOUNT=1
-
+        run: poetry run scrapy crawl houses_kleinanzeigen -s CLOSESPIDER_PAGECOUNT=1
         working-directory: kleinanzeigen_scraper
+        env:
+          TESTMODE: "True"
