@@ -11,10 +11,9 @@ import sys
 import os
 import json
 import scrapy.utils.project
-from scrapy.utils.project import get_project_settings
 
-settings = get_project_settings()
-TESTMODE = settings.getbool("TESTMODE", False)
+
+TESTMODE = os.environ.get("TESTMODE", "False") == "True"
 
 if not TESTMODE:
     CONFIG_PATH = "/app/scrapeRealEstatePrivate/config/config_vps_db.json"
@@ -32,6 +31,7 @@ else:
         "port": "5432",
         "main_table_name": "test_table"
     }
+
 
 
 DUPEFILTER_CLASS = 'scrapy.dupefilters.RFPDupeFilter'
