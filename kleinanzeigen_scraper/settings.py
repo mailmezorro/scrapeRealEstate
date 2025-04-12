@@ -39,10 +39,14 @@ DUPEFILTER_CLASS = 'scrapy.dupefilters.RFPDupeFilter'
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
 
-LOG_ENABLED = True
-LOG_LEVEL = 'DEBUG'  # Possible: DEBUG, INFO, WARNING, ERROR, CRITICAL
-LOG_FILE = f"./../logs/settings_scrapy_log_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt"
-
+if os.environ.get("CI", "false") == "true":
+    LOG_ENABLED = True
+    LOG_LEVEL = 'INFO'
+    LOG_FILE = None  # Nur stdout in CI
+else:
+    LOG_ENABLED = True
+    LOG_LEVEL = 'DEBUG'
+    LOG_FILE = f"./../logs/settings_scrapy_log_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt"
 
 
 # Obey robots.txt rules

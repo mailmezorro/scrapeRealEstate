@@ -32,4 +32,5 @@ jobs:
         run: poetry run scrapy crawl houses_kleinanzeigen -s CLOSESPIDER_PAGECOUNT=1
         env:
           TESTMODE: "True"
+          CI: "true"
 
