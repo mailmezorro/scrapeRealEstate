@@ -27,10 +27,14 @@ class HousesKleinanzeigenSpider(scrapy.Spider):
         # 2) Use your existing logic
         yield from self.parse_listings(response)
 
-        # 3) Calculate the next page
+        # 3) Testmode → no pagination
+        if self.settings.getbool("TESTMODE", False):
+            self.logger.info("Testmode active.")
+            return
+
+        # 4) Calculate the next page
         current_page = int(response.url.split("seite:")[1].split("/")[0])
         next_page = current_page + 1
-
         next_url = f"https://www.kleinanzeigen.de/s-haus-kaufen/aschaffenburg/seite:{next_page}/c208l7421r10"
         self.logger.info(f"Switching to page {next_page}: {next_url}")
 
