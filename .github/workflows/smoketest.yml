@@ -30,5 +30,6 @@ jobs:
 
       - name: Run Spider in TESTMODE
         run: |
-          poetry run scrapy crawl houses_kleinanzeigen -s TESTMODE=True -s CLOSESPIDER_PAGECOUNT=1
+          TESTMODE=True poetry run scrapy crawl houses_kleinanzeigen -s CLOSESPIDER_PAGECOUNT=1
+
         working-directory: kleinanzeigen_scraper
