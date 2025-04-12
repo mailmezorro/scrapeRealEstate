@@ -42,8 +42,10 @@ class HousesKleinanzeigenSpider(scrapy.Spider):
         
 
     def parse_listings(self, response):
-        # Extract the links to the individual ads
         ads = response.css(".aditem .text-module-begin a::attr(href)").getall()
+        if self.settings.getbool("TESTMODE", False):
+            self.logger.info(f"Testmode active{len(ads)} ads")
+
         for ad in ads:
             absolute_url = response.urljoin(ad)
             yield scrapy.Request(absolute_url, callback=self.parse_ad)
