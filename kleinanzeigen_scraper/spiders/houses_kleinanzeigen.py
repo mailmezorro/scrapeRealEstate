@@ -61,7 +61,12 @@ class HousesKleinanzeigenSpider(scrapy.Spider):
 
         # Description
         #item['description'] = response.xpath("//*[@id='viewad-description']/text()").get()
-        item['description'] = response.xpath("//meta[@itemprop='description']/@content").get()
+        # item['description'] = response.xpath("//meta[@itemprop='description']/@content").get() outdated
+        text_list = response.xpath("//p[@id='viewad-description-text']//text()").getall()
+        text_joined = ' '.join([t.strip() for t in text_list if t.strip()])
+        item['description'] = text_joined.strip('{}"')
+
+
 
         # Attributes
         attributes = response.xpath("//div[@id='viewad-details']//li")
