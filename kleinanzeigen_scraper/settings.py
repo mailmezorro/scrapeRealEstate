@@ -12,7 +12,19 @@ import os
 import json
 import scrapy.utils.project
 
+import os
+import json
+
+
+BOT_NAME = "kleinanzeigen_scraper"
+
+SPIDER_MODULES = ["kleinanzeigen_scraper.spiders"]
+NEWSPIDER_MODULE = "kleinanzeigen_scraper.spiders"
+
+
+
 TESTMODE = os.environ.get("TESTMODE", "False") == "True"
+CONFIG_PATH = "/app/scrapeRealEstatePrivate/config/config_vps_db.json"
 
 if TESTMODE:
     config = {
@@ -23,14 +35,11 @@ if TESTMODE:
         "port": "5432",
         "main_table_name": "test_table"
     }
+elif os.path.exists(CONFIG_PATH):
+    with open(CONFIG_PATH, "r") as file:
+        config = json.load(file)
 else:
-    CONFIG_PATH = "/app/scrapeRealEstatePrivate/config/config_vps_db.json"
-    try:
-        with open(CONFIG_PATH, "r") as file:
-            config = json.load(file)
-    except FileNotFoundError:
-        raise FileNotFoundError(f"Configuration file not found: {CONFIG_PATH}")
-
+    raise FileNotFoundError(f"{CONFIG_PATH} not found. Set TESTMODE=True in development or CI.")
 
 
 
