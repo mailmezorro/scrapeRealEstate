@@ -13,7 +13,12 @@ import json
 import scrapy.utils.project
 
 
-TESTMODE = os.environ.get("TESTMODE", "False") == "True"
+TESTMODE = False
+if "scrapy" in sys.modules:
+    from scrapy.utils.project import get_project_settings
+    settings = get_project_settings()
+    TESTMODE = settings.getbool("TESTMODE", False)
+
 
 if not TESTMODE:
     CONFIG_PATH = "/app/scrapeRealEstatePrivate/config/config_vps_db.json"
