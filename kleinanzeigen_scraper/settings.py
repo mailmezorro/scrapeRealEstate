@@ -10,28 +10,29 @@ import datetime
 import sys
 import os
 import json
-CONFIG_PATH = "/app/scrapeRealEstatePrivate/config/config_vps_db.json"
+import scrapy.utils.project
+from scrapy.utils.project import get_project_settings
 
-try:
-    with open(CONFIG_PATH, "r") as file:
-        config = json.load(file)
-except FileNotFoundError:
-    raise FileNotFoundError(f"Configuration file not found: {CONFIG_PATH}")
+settings = get_project_settings()
+TESTMODE = settings.getbool("TESTMODE", False)
 
-BOT_NAME = "kleinanzeigen_scraper"
-SPIDER_MODULES = ["kleinanzeigen_scraper.spiders"]
-NEWSPIDER_MODULE = "kleinanzeigen_scraper.spiders"
+if not TESTMODE:
+    CONFIG_PATH = "/app/scrapeRealEstatePrivate/config/config_vps_db.json"
+    try:
+        with open(CONFIG_PATH, "r") as file:
+            config = json.load(file)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Configuration file not found: {CONFIG_PATH}")
+else:
+    config = {
+        "host": "localhost",
+        "user": "testuser",
+        "password": "testpass",
+        "dbname": "testdb",
+        "port": "5432",
+        "main_table_name": "test_table"
+    }
 
-
-POSTGRES_HOST = config['host']  # or die WSL-IP
-POSTGRES_USER = config['user'] 
-POSTGRES_PASSWORD = config['password']
-POSTGRES_DB = config['dbname']
-POSTGRES_PORT = config['port']
-MAIN_TABLE_NAME = config['main_table_name']
-ITEM_PIPELINES = {
-    'kleinanzeigen_scraper.pipelines.PostgresPipeline': 300,
-}
 
 DUPEFILTER_CLASS = 'scrapy.dupefilters.RFPDupeFilter'
 
