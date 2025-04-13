@@ -42,10 +42,15 @@ class HousesKleinanzeigenSpider(scrapy.Spider):
         
 
     def parse_listings(self, response):
-        ads = response.css(".aditem .text-module-begin a::attr(href)").getall()
+        ads = response.css(".aditem .text-module-begin a::attr(href)").getall() 
         if self.settings.getbool("TESTMODE", False):
-            self.logger.info(f"Testmode active{len(ads)} ads")
+            self.logger.info(f"Testmode active with {len(ads)} ads, scraping only the first one")
+            if ads:
+                absolute_url = response.urljoin(ads[0])
+                yield scrapy.Request(absolute_url, callback=self.parse_ad)
+            return
 
+        # Normal mode
         for ad in ads:
             absolute_url = response.urljoin(ad)
             yield scrapy.Request(absolute_url, callback=self.parse_ad)
