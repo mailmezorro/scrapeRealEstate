@@ -64,7 +64,7 @@ jobs:
       - run: poetry install
       - name: Run Spider & Validate Output
         run: |
-          poetry run scrapy crawl houses_kleinanzeigen -s TESTMODE=True -s CLOSESPIDER_PAGECOUNT=1 -o test_output.json
+          poetry run scrapy crawl houses_kleinanzeigen -s TESTMODE=True -s CLOSESPIDER_PAGECOUNT=3 -o test_output.json
           python smoketests/test_content_smoke.py
         env:
           TESTMODE: "True"
